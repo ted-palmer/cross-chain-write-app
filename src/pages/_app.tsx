@@ -5,6 +5,7 @@ import {
   getDefaultConfig,
   RainbowKitProvider,
   lightTheme,
+  Chain,
 } from '@rainbow-me/rainbowkit'
 import { WagmiProvider } from 'wagmi'
 import { baseSepolia, sepolia } from 'wagmi/chains'
@@ -30,7 +31,7 @@ const WALLET_CONNECT_PROJECT_ID =
 const wagmiConfig = getDefaultConfig({
   appName: 'Relay Contract Viewer',
   projectId: WALLET_CONNECT_PROJECT_ID,
-  chains: [baseSepolia, sepolia],
+  chains: [sepolia, ...TestnetPaymentChains],
   ssr: true,
 })
 

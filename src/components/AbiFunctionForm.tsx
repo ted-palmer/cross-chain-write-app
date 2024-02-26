@@ -15,8 +15,9 @@ import { Button } from '@/components/ui/button'
 import { Chain, PublicClient, parseEther, zeroAddress } from 'viem'
 import { typeToValidator } from '@/lib/constants'
 import { RelayChain } from '@reservoir0x/relay-sdk'
-import { useAccount, useWalletClient } from 'wagmi'
+import { useAccount, useConfig, useWalletClient } from 'wagmi'
 import { useRelayClient, useTransactionModal } from '@/hooks'
+import { switchChain } from 'wagmi/actions'
 
 type AbiFunctionFormProps = {
   abiFunction: AbiFunction
@@ -37,10 +38,11 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
   abi,
   contract,
 }) => {
-  const { address } = useAccount()
+  const { address, chainId: activeWalletChainId } = useAccount()
   const { data: wallet } = useWalletClient()
   const relayClient = useRelayClient()
   const { isOpen, setIsOpen, setStepData, setError } = useTransactionModal()
+  const wagmiConfig = useConfig()
 
   // Create a schema for each input
   const inputSchemas = abiFunction.inputs.reduce((acc, input) => {
@@ -82,6 +84,13 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
       console.error('Missing wallet or relay client')
       return
     }
+
+    if (paymentChain.id !== activeWalletChainId) {
+      await switchChain(wagmiConfig, {
+        chainId: paymentChain.id,
+      })
+    }
+
     try {
       setIsOpen(true)
       const { request } = await publicClient.simulateContract({
