@@ -1,46 +1,97 @@
 import { Inter } from 'next/font/google'
 import { Navbar } from '@/components/navbar'
 import { Input } from '@/components/ui/input'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDebounceValue } from 'usehooks-ts'
-import { useGetContractAbi } from '@/hooks'
+import { useWriteMethods, useRelayClient, useWriteProxyMethods } from '@/hooks'
 import { convertViemChainToRelayChain } from '@reservoir0x/relay-sdk'
-import { baseSepolia } from 'viem/chains'
-import { TestnetChains } from '@/lib/constants'
+import { base, zora } from 'viem/chains'
+import { ChainIdToBlockScoutBaseUrl, MainnetChains } from '@/lib/constants'
 import { ChainDropdown } from '@/components/common/ChainDropdown'
 import { AbiContainer } from '@/components/AbiContainer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertOctagon } from 'lucide-react'
+import { AlertOctagon, Wallet } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import ChainIcon from '@/components/common/ChainIcon'
+import { ContractDetails } from '@/components/ContractDetails'
+import { ExternalLink } from '@/components/common/ExternalLink'
+import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs'
+import { TabsList } from '@radix-ui/react-tabs'
+import { Skeleton } from '@/components/ui/skeleton'
+import { SolverCapacity } from '@/components/ui/SolverCapacity'
+import { AbiFunction } from 'abitype'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const client = useRelayClient()
   const [contract, setContract] = useState('')
-  const [toChain, setToChain] = useState(
-    convertViemChainToRelayChain(baseSepolia)
-  )
+  const [tab, setTab] = useState<'write' | 'write-proxy'>('write')
   const [debouncedContract] = useDebounceValue(contract, 500)
+  const [destinationChain, setDestinationChain] = useState(
+    convertViemChainToRelayChain(base)
+  )
+  const [paymentChain, setPaymentChain] = useState(
+    convertViemChainToRelayChain(zora)
+  )
+
   const {
     error,
-    isError,
-    data: abi,
-    isLoading,
-  } = useGetContractAbi(toChain.id, debouncedContract)
+    data: writeMethodAbi,
+    isLoading: writeMethodAbiIsLoading,
+  } = useWriteMethods(destinationChain.id, debouncedContract)
+
+  const { data: writeProxyMethodAbi, isLoading: writeProxyMethodAbiIsLoading } =
+    useWriteProxyMethods(destinationChain.id, debouncedContract)
+
+  const writeAbiFunctions = useMemo(() => {
+    return writeMethodAbi?.filter(
+      (abiFunction) => abiFunction.type === 'function'
+    ) as AbiFunction[]
+  }, [writeMethodAbi])
+
+  const writeProxyAbiFunctions = useMemo(() => {
+    return writeProxyMethodAbi?.filter(
+      (abiFunction) => abiFunction.type === 'function'
+    ) as AbiFunction[]
+  }, [writeProxyMethodAbi])
+
+  const hasWriteMethods = writeMethodAbi && writeAbiFunctions.length > 0
+  const hasWriteProxyMethods =
+    writeProxyMethodAbi && writeProxyAbiFunctions.length > 0
+
+  const isLoading = writeMethodAbiIsLoading || writeProxyMethodAbiIsLoading
+
+  const paymentChains = useMemo(() => {
+    return (
+      client?.chains.filter((chain) => chain.depositEnabled) ?? [
+        destinationChain,
+      ]
+    )
+  }, [client?.chains, destinationChain])
+
+  // Handle setting active tab
+  useEffect(() => {
+    if (hasWriteMethods) {
+      setTab('write')
+    } else if (hasWriteProxyMethods) {
+      setTab('write-proxy')
+    }
+  }, [hasWriteMethods, hasWriteProxyMethods])
 
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between px-4 md:p-24 ${inter.className}`}
     >
-      <div className="z-10 max-w-5xl w-full flex flex-col items-center justify-between text-sm gap-8">
+      <div className="z-10 max-w-5xl w-full flex flex-col  justify-between text-sm gap-8">
         <Navbar />
-
         <div className="flex items-center w-full gap-2">
           <ChainDropdown
-            chains={TestnetChains?.map((chain) =>
+            chains={MainnetChains?.map((chain) =>
               convertViemChainToRelayChain(chain)
             )}
-            selectedChain={toChain}
-            onSelect={(chain) => setToChain(chain)}
+            selectedChain={destinationChain}
+            onSelect={(chain) => setDestinationChain(chain)}
           />
           <Input
             placeholder="Paste contract address"
@@ -48,8 +99,43 @@ export default function Home() {
             onChange={(e) => setContract(e.target.value)}
           />
         </div>
+        <div className="w-full flex items-center gap-6 gap-4">
+          <ChainDropdown
+            trigger={
+              <Button variant="outline" className="gap-2 w-min">
+                <Wallet />
+                Pay with
+                <ChainIcon chainId={paymentChain.id} />
+                {paymentChain.displayName}
+              </Button>
+            }
+            selectedChain={paymentChain}
+            chains={paymentChains}
+            onSelect={(chain) => setPaymentChain(chain)}
+          />
+          <SolverCapacity
+            originChainId={paymentChain.id}
+            destinationChainId={destinationChain.id}
+          />
+        </div>
 
-        {isLoading ? 'Loading...' : null}
+        <ContractDetails
+          chainId={destinationChain.id}
+          contract={debouncedContract}
+        />
+        {debouncedContract ? (
+          <ExternalLink
+            text="View contract code on Blockscout"
+            href={`${
+              ChainIdToBlockScoutBaseUrl[destinationChain.id]
+            }/address/${debouncedContract}?tab=contract`}
+          />
+        ) : null}
+
+        {/* Loading */}
+        {isLoading && <Skeleton className="h-[400px] w-full" />}
+
+        {/* Error State */}
         {error ? (
           <Alert variant="destructive" className="w-full">
             <AlertOctagon className="h-4 w-4" />
@@ -58,16 +144,56 @@ export default function Home() {
           </Alert>
         ) : null}
 
-        {!isLoading && !error && !isError && abi ? (
-          <AbiContainer abi={abi} contract={contract} toChain={toChain} />
-        ) : (
+        {/* Tabs */}
+        {!isLoading && !error ? (
+          <Tabs
+            defaultValue="write"
+            value={tab}
+            onValueChange={(value) => setTab(value as typeof tab)}
+          >
+            <TabsList className="flex gap-4">
+              {hasWriteMethods ? (
+                <TabsTrigger value="write">Write</TabsTrigger>
+              ) : null}
+
+              {hasWriteProxyMethods ? (
+                <TabsTrigger value="write-proxy">Write proxy</TabsTrigger>
+              ) : null}
+            </TabsList>
+            <TabsContent value="write">
+              {hasWriteMethods ? (
+                <AbiContainer
+                  abi={writeMethodAbi}
+                  abiFunctions={writeAbiFunctions}
+                  contract={contract}
+                  destinationChain={destinationChain}
+                  paymentChain={paymentChain}
+                />
+              ) : null}
+            </TabsContent>
+            <TabsContent value="write-proxy">
+              {hasWriteProxyMethods ? (
+                <AbiContainer
+                  abi={writeProxyMethodAbi}
+                  abiFunctions={writeProxyAbiFunctions}
+                  contract={contract}
+                  destinationChain={destinationChain}
+                  paymentChain={paymentChain}
+                />
+              ) : null}
+            </TabsContent>
+          </Tabs>
+        ) : null}
+
+        {/* Empty State */}
+        {!isLoading && !error && !writeMethodAbi && !writeProxyMethodAbi ? (
           <div className="w-full flex flex-col items-center gap-8">
             <h3 className="text-lg text-center">
-              Fetch the write parameters for any verified contract and execute
+              Fetch the write methods for any verified contract and execute
               transactions with Relay
             </h3>
           </div>
-        )}
+        ) : null}
       </div>
     </main>
   )

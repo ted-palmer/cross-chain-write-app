@@ -9,30 +9,41 @@ import {
 } from '@/components/ui/dialog'
 import { Execute } from '@reservoir0x/relay-sdk'
 import { Button } from '@/components/ui/button'
+import { Address } from 'viem'
+import { getChainBlockExplorerUrl, truncateAddress } from '@/lib/utils'
 
 export const TransactionModal: FC = () => {
-  const { isOpen, setIsOpen, stepData, setStepData } = useTransactionModal()
+  const { isOpen, setIsOpen, stepData, setStepData, error } =
+    useTransactionModal()
 
-  const [currentStep, currentStepItem] = useMemo(() => {
+  const [currentStep, currentStepItem, txHashes] = useMemo(() => {
     if (stepData) {
       let currentStep: NonNullable<Execute['steps']>['0'] | null = null
       let currentStepItem:
         | NonNullable<Execute['steps'][0]['items']>[0]
-        | undefined
+        | undefined = undefined
+      let txHashes: { txHash: Address; chainId: number }[] = []
 
       for (const step of stepData) {
         for (const item of step.items || []) {
+          if (item.txHashes && item.txHashes.length > 0) {
+            txHashes = item.txHashes.concat([...txHashes])
+          }
+          if (item.internalTxHashes && item.internalTxHashes.length > 0) {
+            txHashes = item.internalTxHashes.concat([...txHashes])
+          }
           if (item.status === 'incomplete') {
             currentStep = step
             currentStepItem = item
+
             break // Exit the inner loop once the first incomplete item is found
           }
         }
         if (currentStep && currentStepItem) break // Exit the outer loop if the current step and item have been found
       }
-      return [currentStep, currentStepItem]
+      return [currentStep, currentStepItem, txHashes]
     }
-    return [null, null]
+    return [null, null, null]
   }, [stepData])
 
   return (
@@ -40,18 +51,27 @@ export const TransactionModal: FC = () => {
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
-          console.log('setting step data to undefined')
           setStepData(undefined)
         }
         setIsOpen(open)
       }}
     >
       <DialogContent className="">
-        {!stepData ? (
+        {!stepData && !error ? (
           <>
             <DialogHeader className="justify-center">
-              <DialogDescription className="text-center items-center">
+              <DialogDescription className="text-center items-center py-3">
                 Loading...
+              </DialogDescription>
+            </DialogHeader>
+          </>
+        ) : null}
+        {!stepData && error ? (
+          <>
+            <DialogHeader className="justify-center">
+              <DialogTitle>{error?.name}</DialogTitle>
+              <DialogDescription className="py-3">
+                {error.message}
               </DialogDescription>
             </DialogHeader>
           </>
@@ -73,11 +93,25 @@ export const TransactionModal: FC = () => {
                 Your transaction went through successfully
               </DialogDescription>
             </DialogHeader>
+            <div className="flex flex-col items-center py-2">
+              {txHashes?.map(({ txHash, chainId }, idx) => {
+                const blockExplorer = getChainBlockExplorerUrl(chainId)
+                return (
+                  <a
+                    key={idx}
+                    href={`${blockExplorer}/tx/${txHash}`}
+                    target="_blank"
+                    className="text-primary hover:opacity-9"
+                  >
+                    View Tx: {truncateAddress(txHash)}
+                  </a>
+                )
+              })}
+            </div>
             <Button
               onClick={() => {
                 setIsOpen(false)
                 setStepData(undefined)
-                console.log('resetting step data')
               }}
             >
               Close

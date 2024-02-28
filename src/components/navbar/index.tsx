@@ -34,7 +34,10 @@ export const Navbar = () => {
       </a>
       <div className="flex gap-4">
         <ThemeToggle />
-        <ConnectButton />
+        <ConnectButton
+          chainStatus={{ smallScreen: 'none', largeScreen: 'full' }}
+          accountStatus={{ smallScreen: 'avatar', largeScreen: 'full' }}
+        />
       </div>
     </div>
   )

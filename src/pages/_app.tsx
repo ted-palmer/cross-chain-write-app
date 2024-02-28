@@ -5,22 +5,15 @@ import {
   getDefaultConfig,
   RainbowKitProvider,
   lightTheme,
-  Chain,
 } from '@rainbow-me/rainbowkit'
 import { WagmiProvider } from 'wagmi'
-import { baseSepolia, sepolia } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { RelayClientProvider } from '@/components/providers/RelayClientProvider'
-import {
-  MainnetChains,
-  TestnetChains,
-  TestnetPaymentChains,
-} from '@/lib/constants'
+import { MainnetChains } from '@/lib/constants'
 import {
   LogLevel,
   MAINNET_RELAY_API,
-  TESTNET_RELAY_API,
   convertViemChainToRelayChain,
 } from '@reservoir0x/relay-sdk'
 import { TransactionModalProvider } from '@/components/providers/TransactionModalProvider'
@@ -31,7 +24,7 @@ const WALLET_CONNECT_PROJECT_ID =
 const wagmiConfig = getDefaultConfig({
   appName: 'Relay Contract Viewer',
   projectId: WALLET_CONNECT_PROJECT_ID,
-  chains: [sepolia, ...TestnetPaymentChains],
+  chains: MainnetChains,
   ssr: true,
 })
 
@@ -43,12 +36,13 @@ function App({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
-            baseApiUrl: TESTNET_RELAY_API,
+            baseApiUrl: MAINNET_RELAY_API,
             chains: [
-              ...TestnetPaymentChains.map((chain) =>
+              ...MainnetChains.map((chain) =>
                 convertViemChainToRelayChain(chain)
               ),
             ],
+            pollingInterval: 2000,
             logLevel: LogLevel['Verbose'],
           }}
         >

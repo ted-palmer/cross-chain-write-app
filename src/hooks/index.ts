@@ -1,5 +1,13 @@
-import useGetContractAbi from './useGetContractAbi'
+import useWriteMethods from './useWriteMethods'
+import useWriteProxyMethods from './useWriteProxyMethods'
 import useRelayClient from './useRelayClient'
 import useTransactionModal from './useTransactionModal'
+import useContractDetails from './useContractDetails'
 
-export { useGetContractAbi, useRelayClient, useTransactionModal }
+export {
+  useWriteMethods,
+  useWriteProxyMethods,
+  useRelayClient,
+  useTransactionModal,
+  useContractDetails,
+}

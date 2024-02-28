@@ -1,17 +1,9 @@
 import { Abi, AbiFunction, Address } from 'abitype'
-import { FC, useState } from 'react'
-import { ExternalLink } from '@/components/common/ExternalLink'
-import {
-  ChainIdToBlockScoutBaseUrl,
-  TestnetPaymentChains,
-} from '@/lib/constants'
-import {
-  RelayChain,
-  convertViemChainToRelayChain,
-} from '@reservoir0x/relay-sdk'
+import { FC, useMemo } from 'react'
+import { RelayChain } from '@reservoir0x/relay-sdk'
 import { AbiFunctionForm } from '@/components/AbiFunctionForm'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertOctagon, Wallet } from 'lucide-react'
+import { AlertOctagon } from 'lucide-react'
 import {
   Accordion,
   AccordionContent,
@@ -19,38 +11,27 @@ import {
   AccordionTrigger,
 } from './ui/accordion'
 import { PublicClient, createPublicClient, http } from 'viem'
-import * as wagmiChains from 'wagmi/chains'
 import { TransactionModal } from '@/components/TransactionModal'
-import { ChainDropdown } from '@/components/common/ChainDropdown'
-import { Button } from './ui/button'
-import ChainIcon from './common/ChainIcon'
 
 type AbiContainerProps = {
   abi: Abi
+  abiFunctions: AbiFunction[]
   contract: string
-  toChain: RelayChain
+  destinationChain: RelayChain
+  paymentChain: RelayChain
 }
 
 export const AbiContainer: FC<AbiContainerProps> = ({
   abi,
+  abiFunctions,
   contract,
-  toChain,
+  destinationChain,
+  paymentChain,
 }) => {
-  const [paymentChain, setPaymentChain] = useState<RelayChain>(
-    convertViemChainToRelayChain(wagmiChains.sepolia)
-  )
-  const wagmiChain =
-    Object.values(wagmiChains).find((chain) => chain.id === toChain.id) ??
-    wagmiChains.mainnet
-
   const publicClient = createPublicClient({
-    chain: wagmiChain,
+    chain: destinationChain.viemChain,
     transport: http(),
   })
-
-  const abiFunctions = abi.filter(
-    (abiFunction) => abiFunction.type === 'function'
-  ) as AbiFunction[]
 
   return (
     <div className="w-full flex flex-col gap-4">
@@ -65,27 +46,6 @@ export const AbiContainer: FC<AbiContainerProps> = ({
           before submitting a transaction.
         </AlertDescription>
       </Alert>
-      <ExternalLink
-        text="View contract code on Blockscout"
-        href={`${
-          ChainIdToBlockScoutBaseUrl[toChain.id]
-        }/address/${contract}?tab=contract`}
-      />
-
-      <ChainDropdown
-        trigger={
-          <Button variant="outline" className="gap-2 w-min">
-            <Wallet />
-            Pay with <ChainIcon chainId={paymentChain.id} />
-            {paymentChain.displayName}
-          </Button>
-        }
-        selectedChain={paymentChain}
-        chains={TestnetPaymentChains.map((chain) =>
-          convertViemChainToRelayChain(chain)
-        )}
-        onSelect={(chain) => setPaymentChain(chain)}
-      />
 
       {abiFunctions?.length > 0 ? (
         <div className="rounded-lg border">
@@ -100,10 +60,9 @@ export const AbiContainer: FC<AbiContainerProps> = ({
                     key={index}
                     abi={abi}
                     contract={contract as Address}
-                    wagmiChain={wagmiChain}
                     paymentChain={paymentChain}
                     abiFunction={abiFunction}
-                    toChain={toChain}
+                    destinationChain={destinationChain}
                     publicClient={publicClient as PublicClient} // @TODO: fix PublicClient type
                   />
                 </AccordionContent>

@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Chain, PublicClient, parseEther, zeroAddress } from 'viem'
-import { typeToValidator } from '@/lib/constants'
+import { PublicClient, parseEther } from 'viem'
+import { ValidatorType, typeToValidator } from '@/lib/constants'
 import { RelayChain } from '@reservoir0x/relay-sdk'
 import { useAccount, useConfig, useWalletClient } from 'wagmi'
 import { useRelayClient, useTransactionModal } from '@/hooks'
@@ -21,38 +21,39 @@ import { switchChain } from 'wagmi/actions'
 
 type AbiFunctionFormProps = {
   abiFunction: AbiFunction
-  toChain: RelayChain
+  destinationChain: RelayChain
   paymentChain: RelayChain
   publicClient: PublicClient
-  wagmiChain: Chain
   abi: Abi
   contract: Address
 }
 
 export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
   abiFunction,
-  toChain,
+  destinationChain,
   paymentChain,
   publicClient,
-  wagmiChain,
   abi,
   contract,
 }) => {
   const { address, chainId: activeWalletChainId } = useAccount()
   const { data: wallet } = useWalletClient()
   const relayClient = useRelayClient()
-  const { isOpen, setIsOpen, setStepData, setError } = useTransactionModal()
   const wagmiConfig = useConfig()
+  const { isOpen, setIsOpen, setStepData, setError } = useTransactionModal()
 
   // Create a schema for each input
   const inputSchemas = abiFunction.inputs.reduce((acc, input) => {
-    if (input.name) {
-      acc[input.name] =
-        typeToValidator[input.type] ||
-        z.string().min(1, `${input.name} is required`)
+    if (input.name && typeToValidator[input.type]) {
+      acc[input.name] = typeToValidator[input.type]
+    } else if (input.name) {
+      console.warn(
+        `No validator found for type ${input.type}, using fallback string validator.`
+      )
+      acc[input.name] = z.string().min(1, `${input.name} is required`)
     }
     return acc
-  }, {} as Record<string, z.ZodTypeAny>)
+  }, {} as Record<string, ValidatorType>)
 
   // Check if the function is payable and add `value` to the schema if it is
   if (abiFunction.stateMutability === 'payable') {
@@ -70,18 +71,18 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
   const handleSubmit = async (data: FormData) => {
     console.log(`${abiFunction.name} called with:`, data)
 
-    // Remove 'value' from data to separate it from args
     const { value, ...argsData } = data
 
-    // Construct the args array from the form data
-    const args = abiFunction.inputs.map(
-      (input) => argsData[input.name as string]
-    )
+    const args = abiFunction.inputs.map((input) => {
+      if (input.name) {
+        return argsData[input.name]
+      }
+    })
 
     setError(null)
 
     if (!wallet || !relayClient || !address) {
-      console.error('Missing wallet or relay client')
+      console.error('Missing wallet or Relay client')
       return
     }
 
@@ -96,27 +97,20 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
       const { request } = await publicClient.simulateContract({
         address: contract,
         abi,
-        account: address, //zeroAddress, // @TOOD: should be the solver's address
+        account: '0xf70da97812cb96acdf810712aa562db8dfa3dbef',
         functionName: abiFunction.name,
-        args: args ?? [],
-        value: value ? parseEther(value) : undefined,
-        chain: wagmiChain,
+        args: args ?? ([] as readonly unknown[]),
+        value: value ? parseEther(value as string) : undefined,
+        chain: destinationChain.viemChain,
       })
 
       console.log(request)
 
-      // Ensure `args` is always an array when passing to relayClient
-      const relayRequest = {
-        ...request,
-        args: request.args || [],
-        // address: address, // make sure the all transactions go to correct address
-      }
-
       await relayClient?.actions
         .call({
-          txs: [relayRequest],
+          txs: [{ ...request, args: request.args as readonly unknown[] }],
           chainId: paymentChain.id,
-          toChainId: toChain.id,
+          toChainId: destinationChain.id,
           wallet,
           onProgress: (steps) => {
             console.log('steps: ', steps)
@@ -132,9 +126,13 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
         })
     } catch (error) {
       console.error('Error simulating contract:', error)
-
-      // setError(error)
-      // @TODO set error
+      let errorMessage = 'Error simulating contract call'
+      if (error instanceof Error) {
+        setError(error)
+      } else if (typeof error === 'string') {
+        errorMessage = error
+        setError(new Error(errorMessage))
+      }
     }
   }
 
@@ -182,7 +180,7 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
           />
         )}
 
-        <Button type="submit" className="w-max">
+        <Button type="submit" className="w-max" disabled={!address || isOpen}>
           Call {abiFunction.name}
         </Button>
       </form>
