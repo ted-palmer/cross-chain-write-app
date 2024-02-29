@@ -19,6 +19,7 @@ import {
 import { TransactionModalProvider } from '@/components/providers/TransactionModalProvider'
 import { ThemeProvider, useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { Disclaimer } from '@/components/common/Disclaimer'
 
 const WALLET_CONNECT_PROJECT_ID =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || ''
@@ -98,6 +99,7 @@ function App({ Component, pageProps }: AppProps) {
       <RainbowKitProvider theme={rainbowKitTheme}>
         <TransactionModalProvider>
           <Component {...pageProps} />
+          <Disclaimer />
         </TransactionModalProvider>
       </RainbowKitProvider>
     </ThemeProvider>
