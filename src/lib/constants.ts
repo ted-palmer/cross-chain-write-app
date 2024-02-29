@@ -46,7 +46,7 @@ export const TestnetPaymentChains = [
   holesky,
   blastSepolia,
   modeTestnet,
-]
+] as [Chain, ...Chain[]]
 
 // Validators
 const addressValidator = z

@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useDebounceValue } from 'usehooks-ts'
 import { useWriteMethods, useRelayClient, useWriteProxyMethods } from '@/hooks'
 import { convertViemChainToRelayChain } from '@reservoir0x/relay-sdk'
-import { base, zora } from 'viem/chains'
-import { MainnetChains } from '@/lib/constants'
+import { base, baseSepolia, zora, zoraSepolia } from 'viem/chains'
+import { MainnetChains, TestnetChains } from '@/lib/constants'
 import { ChainDropdown } from '@/components/common/ChainDropdown'
 import { AbiContainer } from '@/components/AbiContainer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -27,10 +27,10 @@ export default function Home() {
   const [tab, setTab] = useState<'write' | 'write-proxy'>('write')
   const [debouncedContract] = useDebounceValue(contract, 500)
   const [destinationChain, setDestinationChain] = useState(
-    convertViemChainToRelayChain(base)
+    convertViemChainToRelayChain(baseSepolia)
   )
   const [paymentChain, setPaymentChain] = useState(
-    convertViemChainToRelayChain(zora)
+    convertViemChainToRelayChain(zoraSepolia)
   )
 
   const {
@@ -85,7 +85,7 @@ export default function Home() {
         <Navbar />
         <div className="flex items-center w-full gap-2">
           <ChainDropdown
-            chains={MainnetChains?.map((chain) =>
+            chains={TestnetChains?.map((chain) =>
               convertViemChainToRelayChain(chain)
             )}
             selectedChain={destinationChain}

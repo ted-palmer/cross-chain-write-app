@@ -10,10 +10,11 @@ import {
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RelayClientProvider } from '@/components/providers/RelayClientProvider'
-import { MainnetChains } from '@/lib/constants'
+import { MainnetChains, TestnetPaymentChains } from '@/lib/constants'
 import {
   LogLevel,
   MAINNET_RELAY_API,
+  TESTNET_RELAY_API,
   convertViemChainToRelayChain,
 } from '@reservoir0x/relay-sdk'
 import { TransactionModalProvider } from '@/components/providers/TransactionModalProvider'
@@ -26,7 +27,7 @@ const WALLET_CONNECT_PROJECT_ID =
 const wagmiConfig = getDefaultConfig({
   appName: 'Relay Contract Viewer',
   projectId: WALLET_CONNECT_PROJECT_ID,
-  chains: MainnetChains,
+  chains: TestnetPaymentChains,
   ssr: true,
 })
 
@@ -38,9 +39,9 @@ function AppWrapper(pageProps: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
-            baseApiUrl: MAINNET_RELAY_API,
+            baseApiUrl: TESTNET_RELAY_API,
             chains: [
-              ...MainnetChains.map((chain) =>
+              ...TestnetPaymentChains.map((chain) =>
                 convertViemChainToRelayChain(chain)
               ),
             ],
