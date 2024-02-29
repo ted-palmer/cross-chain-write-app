@@ -6,20 +6,18 @@ import { useDebounceValue } from 'usehooks-ts'
 import { useWriteMethods, useRelayClient, useWriteProxyMethods } from '@/hooks'
 import { convertViemChainToRelayChain } from '@reservoir0x/relay-sdk'
 import { base, zora } from 'viem/chains'
-import { ChainIdToBlockScoutBaseUrl, MainnetChains } from '@/lib/constants'
+import { MainnetChains } from '@/lib/constants'
 import { ChainDropdown } from '@/components/common/ChainDropdown'
 import { AbiContainer } from '@/components/AbiContainer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertOctagon, Wallet } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import ChainIcon from '@/components/common/ChainIcon'
 import { ContractDetails } from '@/components/ContractDetails'
-import { ExternalLink } from '@/components/common/ExternalLink'
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs'
 import { TabsList } from '@radix-ui/react-tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { SolverCapacity } from '@/components/ui/SolverCapacity'
+import { SolverCapacity } from '@/components/SolverCapacity'
 import { AbiFunction } from 'abitype'
+import { PaymentChainDropdown } from '@/components/PaymentChainDropdown'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -99,16 +97,13 @@ export default function Home() {
             onChange={(e) => setContract(e.target.value)}
           />
         </div>
-        <div className="w-full flex items-center gap-6 gap-4">
-          <ChainDropdown
-            trigger={
-              <Button variant="outline" className="gap-2 w-min">
-                <Wallet />
-                Pay with
-                <ChainIcon chainId={paymentChain.id} />
-                {paymentChain.displayName}
-              </Button>
-            }
+        <div className="w-full flex flex-col gap-6 gap-3">
+          <div className="flex items-center gap-2">
+            <Wallet className="" />
+            <h6 className="text-xl">Pay with</h6>
+          </div>
+
+          <PaymentChainDropdown
             selectedChain={paymentChain}
             chains={paymentChains}
             onSelect={(chain) => setPaymentChain(chain)}
@@ -123,14 +118,6 @@ export default function Home() {
           chainId={destinationChain.id}
           contract={debouncedContract}
         />
-        {debouncedContract ? (
-          <ExternalLink
-            text="View contract code on Blockscout"
-            href={`${
-              ChainIdToBlockScoutBaseUrl[destinationChain.id]
-            }/address/${debouncedContract}?tab=contract`}
-          />
-        ) : null}
 
         {/* Loading */}
         {isLoading && <Skeleton className="h-[400px] w-full" />}
@@ -145,7 +132,7 @@ export default function Home() {
         ) : null}
 
         {/* Tabs */}
-        {!isLoading && !error ? (
+        {!isLoading && !error && (hasWriteMethods || hasWriteProxyMethods) ? (
           <Tabs
             defaultValue="write"
             value={tab}
@@ -189,8 +176,8 @@ export default function Home() {
         {!isLoading && !error && !writeMethodAbi && !writeProxyMethodAbi ? (
           <div className="w-full flex flex-col items-center gap-8">
             <h3 className="text-lg text-center">
-              Fetch the write methods for any verified contract and execute
-              transactions with Relay
+              Fetch the write methods for any verified contract and pay with
+              cross-chain ETH
             </h3>
           </div>
         ) : null}

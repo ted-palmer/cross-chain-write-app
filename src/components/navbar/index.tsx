@@ -7,13 +7,12 @@ import { useEffect, useState } from 'react'
 export const Navbar = () => {
   const { theme, systemTheme } = useTheme()
   const [imgSrc, setImgSrc] = useState('/relay-light.svg')
+  const isDarkTheme =
+    theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
 
   useEffect(() => {
-    const isDarkTheme =
-      theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
-
     setImgSrc(isDarkTheme ? '/relay-dark.svg' : '/relay-light.svg')
-  }, [theme, systemTheme])
+  }, [isDarkTheme])
 
   return (
     <div className="w-full flex justify-between items-center py-4">

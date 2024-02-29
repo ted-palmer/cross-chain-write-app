@@ -3,6 +3,8 @@ import { FC } from 'react'
 import { Skeleton } from './ui/skeleton'
 import { Alert, AlertTitle } from './ui/alert'
 import { AlertOctagon } from 'lucide-react'
+import { ExternalLink } from './common/ExternalLink'
+import { ChainIdToBlockScoutBaseUrl } from '@/lib/constants'
 
 type ContractDetailsProps = {
   contract?: string
@@ -30,16 +32,27 @@ export const ContractDetails: FC<ContractDetailsProps> = ({
           <p>Compiler Version: {contractDetails.compiler_version}</p>
           <p>Language: {contractDetails.language}</p>
         </div>
+        <ExternalLink
+          text="View contract code on Blockscout"
+          href={`${ChainIdToBlockScoutBaseUrl[chainId]}/address/${contract}?tab=contract`}
+        />
       </div>
     )
   else if (isError) {
     return (
-      <Alert variant="destructive" className="w-full">
-        <AlertOctagon className="h-4 w-4" />
-        <AlertTitle className="mb-0">
-          Failed to fetch contract details
-        </AlertTitle>
-      </Alert>
+      <div className="flex flex-col w-full gap-4">
+        <Alert variant="destructive" className="w-full">
+          <AlertOctagon className="h-4 w-4" />
+          <AlertTitle className="mb-0">
+            Failed to fetch contract details
+          </AlertTitle>
+        </Alert>
+
+        <ExternalLink
+          text="View contract code on Blockscout"
+          href={`${ChainIdToBlockScoutBaseUrl[chainId]}/address/${contract}?tab=contract`}
+        />
+      </div>
     )
   }
 }

@@ -8,7 +8,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
 import { InfoIcon } from 'lucide-react'
 
 type SolverCapacityProps = {
@@ -26,7 +25,7 @@ export const SolverCapacity: FC<SolverCapacityProps> = ({
   )
 
   if (isLoading) {
-    return <Skeleton className="h-[24px] w-[200px]" />
+    return <Skeleton className="h-[20px] w-[200px]" />
   } else if (solverCapacity?.solver?.capacityPerRequest)
     return (
       <h6 className="flex items-center gap-2">
@@ -39,8 +38,16 @@ export const SolverCapacity: FC<SolverCapacityProps> = ({
             </TooltipTrigger>
             <TooltipContent>
               <p className="max-w-[200px]">
-                The Relay Solver has limited capacity until more relayers are
-                added to the network
+                The{' '}
+                <a
+                  href="https://docs.relay.link/what-is-relay"
+                  target="_blank"
+                  className="text-primary"
+                >
+                  Relay Solver
+                </a>{' '}
+                has limited capacity until more relayers are added to the
+                network
               </p>
             </TooltipContent>
           </Tooltip>
