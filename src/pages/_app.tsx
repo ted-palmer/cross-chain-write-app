@@ -21,12 +21,13 @@ import { TransactionModalProvider } from '@/components/providers/TransactionModa
 import { ThemeProvider, useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Disclaimer } from '@/components/Disclaimer'
+import { Analytics } from '@vercel/analytics/react'
 
 const WALLET_CONNECT_PROJECT_ID =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || ''
 
 const wagmiConfig = getDefaultConfig({
-  appName: 'Relay Cross-chain Write',
+  appName: 'Cross-Chain Write',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains: TestnetPaymentChains,
   ssr: true,
@@ -40,7 +41,7 @@ function AppWrapper(pageProps: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
-            source: 'Relay Cross-chain Write',
+            source: 'Cross-Chain Write',
             baseApiUrl: TESTNET_RELAY_API,
             chains: [
               ...TestnetPaymentChains.map((chain) =>
@@ -100,6 +101,7 @@ function App({ Component, pageProps }: AppProps) {
       <RainbowKitProvider theme={rainbowKitTheme}>
         <TransactionModalProvider>
           <Component {...pageProps} />
+          <Analytics />
           <Disclaimer />
         </TransactionModalProvider>
       </RainbowKitProvider>

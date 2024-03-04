@@ -90,6 +90,6 @@ export const mapAbiTypeToZod = (abiType: AbiType) => {
   } else if (abiType === 'string') {
     return z.string()
   }
-  // @TODO: handle arrays and tuples
+  // @TODO: handle validation for arrays and tuples
   return z.any()
 }

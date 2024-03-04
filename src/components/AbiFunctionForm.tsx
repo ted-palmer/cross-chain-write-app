@@ -23,6 +23,7 @@ import { useAccount, useBalance, useConfig, useWalletClient } from 'wagmi'
 import { useRelayClient, useTransactionModal } from '@/hooks'
 import { switchChain } from 'wagmi/actions'
 import useSolverCapacity from '@/hooks/useSolverCapacity'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 type AbiFunctionFormProps = {
   abiFunction: AbiFunction
@@ -41,7 +42,7 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
   abi,
   contract,
 }) => {
-  const { address, chainId: activeWalletChainId } = useAccount()
+  const { address, chainId: activeWalletChainId, isDisconnected } = useAccount()
   const { data: wallet } = useWalletClient()
   const relayClient = useRelayClient()
   const wagmiConfig = useConfig()
@@ -89,7 +90,14 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
 
       const args = abiFunction.inputs.map((input) => {
         if (input.name) {
-          return argsData[input.name]
+          const inputValue = argsData[input.name]
+          if (
+            (input.type.includes('[]') || input.type === 'tuple') && // @TODO: add zod validation for arrays and tuples
+            typeof inputValue === 'string'
+          ) {
+            return inputValue.split(',').map((item) => item.trim())
+          }
+          return inputValue
         }
       })
 
@@ -210,26 +218,33 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
         className="p-2 flex flex-col w-full gap-2"
       >
         {abiFunction.inputs.length > 0
-          ? abiFunction.inputs.map((input, index) => (
-              <FormField
-                key={index}
-                control={formAbiFunctions.control}
-                name={input.name ?? 'Unknown input name'}
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-x-5">
-                    <FormLabel className="flex shrink-0">
-                      {input.name} ({input.type})
-                    </FormLabel>
-                    <div className="flex flex-col w-full gap-2">
-                      <FormControl>
-                        <Input placeholder={input.type} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
-            ))
+          ? abiFunction.inputs.map((input, index) => {
+              const isArrayOrTupple =
+                input.type.includes('[]') || input.type === 'tuple'
+              const placeholder = isArrayOrTupple
+                ? `${input.type} (separate by commas)`
+                : input.type
+              return (
+                <FormField
+                  key={index}
+                  control={formAbiFunctions.control}
+                  name={input.name ?? 'Unknown input name'}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-x-5">
+                      <FormLabel className="flex shrink-0">
+                        {input.name} ({input.type})
+                      </FormLabel>
+                      <div className="flex flex-col w-full gap-2">
+                        <FormControl>
+                          <Input placeholder={placeholder} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              )
+            })
           : null}
         {abiFunction.stateMutability === 'payable' && (
           <FormField
@@ -238,18 +253,24 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
             render={({ field }) => (
               <FormItem className="flex items-center gap-x-5">
                 <FormLabel className="flex shrink-0">Value (ETH)</FormLabel>
-                <FormControl>
-                  <Input placeholder="uint256" {...field} />
-                </FormControl>
-                <FormMessage />
+                <div className="flex flex-col w-full gap-2">
+                  <FormControl>
+                    <Input placeholder="uint256" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
         )}
 
-        <Button type="submit" className="w-max" disabled={!address || isOpen}>
-          Call {abiFunction.name}
-        </Button>
+        {isDisconnected ? (
+          <ConnectButton />
+        ) : (
+          <Button type="submit" className="w-max" disabled={!address || isOpen}>
+            Call {abiFunction.name}
+          </Button>
+        )}
       </form>
     </FormProvider>
   )

@@ -43,7 +43,7 @@ export const PaymentChainDropdown: FC<PaymentChainDropdown> = ({
             <div className="flex flex-col items-start">
               {selectedChain.displayName}
               <p className="text-muted-foreground text-xs">
-                Balance: {selectedChainBalance} ETH
+                Balance: {selectedChainBalance}
               </p>
             </div>
           </div>
@@ -61,7 +61,7 @@ export const PaymentChainDropdown: FC<PaymentChainDropdown> = ({
             <div className="flex flex-col">
               {chain.displayName}
               <p className="text-muted-foreground text-xs">
-                Balance: {formatETHBalance(chainBalancesMap[chain.id]) + ' ETH'}
+                Balance: {formatETHBalance(chainBalancesMap[chain.id])}
               </p>
             </div>
           </DropdownMenuItem>

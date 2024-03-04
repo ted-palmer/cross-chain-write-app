@@ -46,5 +46,5 @@ export const formatETHBalance = (
   if (balance === undefined) {
     return '-'
   }
-  return `${formatNumber(formatEther(balance), decimals)}`
+  return `${formatNumber(formatEther(balance), decimals)} ETH`
 }

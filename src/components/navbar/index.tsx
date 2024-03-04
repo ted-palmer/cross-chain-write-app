@@ -1,6 +1,7 @@
 import { ThemeToggle } from './ThemeToggle'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { RelayLogo } from '../common/RelayLogo'
+import { Button } from '@/components/ui/button'
+import { Icons } from '@/components/common/icons'
 
 export const Navbar = () => {
   return (
@@ -12,10 +13,18 @@ export const Navbar = () => {
         rel="noopener noreferrer"
       >
         Powered By{' '}
-        <RelayLogo className="w-[100px] h-auto transition duration-150 ease-in-out hover:scale-[1.05]" />
+        <Icons.Relay className="w-[100px] h-auto transition duration-150 ease-in-out hover:scale-[1.05]" />
       </a>
-      <div className="flex gap-4 w-full justify-between sm:w-max">
+      <div className="flex gap-3 w-full sm:w-max justify-end">
         <ThemeToggle />
+        <a
+          href="https://github.com/ted-palmer/cross-chain-write-app"
+          target="_blank"
+        >
+          <Button variant="outline" size="icon">
+            <Icons.gitHub className="h-[1.2rem] w-[1.2rem]" />
+          </Button>
+        </a>
         <ConnectButton
           chainStatus={{ smallScreen: 'none', largeScreen: 'full' }}
           accountStatus={{ smallScreen: 'avatar', largeScreen: 'full' }}
