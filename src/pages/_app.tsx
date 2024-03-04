@@ -40,7 +40,7 @@ function AppWrapper(pageProps: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
-            source: 'Relay Cross-chain Write',
+            source: 'Cross-chain Write',
             baseApiUrl: MAINNET_RELAY_API,
             chains: [
               ...MainnetChains.map((chain) =>
