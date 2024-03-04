@@ -26,7 +26,7 @@ const WALLET_CONNECT_PROJECT_ID =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || ''
 
 const wagmiConfig = getDefaultConfig({
-  appName: 'Relay Cross-chain Write',
+  appName: 'Cross-Chain Write',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains: MainnetChains,
   ssr: true,
@@ -40,7 +40,7 @@ function AppWrapper(pageProps: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
-            source: 'Cross-chain Write',
+            source: 'Cross-Chain Write',
             baseApiUrl: MAINNET_RELAY_API,
             chains: [
               ...MainnetChains.map((chain) =>

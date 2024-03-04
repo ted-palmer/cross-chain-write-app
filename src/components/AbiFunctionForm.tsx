@@ -19,6 +19,7 @@ import { useAccount, useBalance, useConfig, useWalletClient } from 'wagmi'
 import { useRelayClient, useTransactionModal } from '@/hooks'
 import { switchChain } from 'wagmi/actions'
 import useSolverCapacity from '@/hooks/useSolverCapacity'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 type AbiFunctionFormProps = {
   abiFunction: AbiFunction
@@ -37,7 +38,7 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
   abi,
   contract,
 }) => {
-  const { address, chainId: activeWalletChainId } = useAccount()
+  const { address, chainId: activeWalletChainId, isDisconnected } = useAccount()
   const { data: wallet } = useWalletClient()
   const relayClient = useRelayClient()
   const wagmiConfig = useConfig()
@@ -83,11 +84,36 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
 
       const { value, ...argsData } = data
 
-      const args = abiFunction.inputs.map((input) => {
+      // const args = abiFunction.inputs.map((input) => {
+      //   if (input.name) {
+      //     return argsData[input.name]
+      //   }
+      // })
+
+      // Initialize a new object to hold processed form data
+      const processedData = {}
+
+      // Process each form input
+      abiFunction.inputs.forEach((input) => {
+        console.log('input: ', input)
         if (input.name) {
-          return argsData[input.name]
+          const value = data[input.name]
+          // Check if input type is array or tuple and value is a string
+          if (
+            (input.type.includes('[]') || input.type === 'tuple') &&
+            typeof value === 'string'
+          ) {
+            console.log('here')
+            // Convert comma-separated string to array
+            processedData[input.name] = value.split(',').map((v) => v.trim())
+          } else {
+            // Use value as is for other types
+            processedData[input.name] = value
+          }
         }
       })
+
+      const args = abiFunction.inputs.map((input) => processedData[input.name])
 
       if (!wallet || !relayClient || !address) {
         throw Error('Missing wallet or Relay client')
@@ -233,18 +259,24 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
             render={({ field }) => (
               <FormItem className="flex items-center gap-x-5">
                 <FormLabel className="flex shrink-0">Value (ETH)</FormLabel>
-                <FormControl>
-                  <Input placeholder="uint256" {...field} />
-                </FormControl>
-                <FormMessage />
+                <div className="flex flex-col w-full gap-2">
+                  <FormControl>
+                    <Input placeholder="uint256" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
         )}
 
-        <Button type="submit" className="w-max" disabled={!address || isOpen}>
-          Call {abiFunction.name}
-        </Button>
+        {isDisconnected ? (
+          <ConnectButton />
+        ) : (
+          <Button type="submit" className="w-max" disabled={!address || isOpen}>
+            Call {abiFunction.name}
+          </Button>
+        )}
       </form>
     </FormProvider>
   )
