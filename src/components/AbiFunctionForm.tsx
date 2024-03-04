@@ -84,36 +84,18 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
 
       const { value, ...argsData } = data
 
-      // const args = abiFunction.inputs.map((input) => {
-      //   if (input.name) {
-      //     return argsData[input.name]
-      //   }
-      // })
-
-      // Initialize a new object to hold processed form data
-      const processedData = {}
-
-      // Process each form input
-      abiFunction.inputs.forEach((input) => {
-        console.log('input: ', input)
+      const args = abiFunction.inputs.map((input) => {
         if (input.name) {
-          const value = data[input.name]
-          // Check if input type is array or tuple and value is a string
+          const inputValue = argsData[input.name]
           if (
-            (input.type.includes('[]') || input.type === 'tuple') &&
-            typeof value === 'string'
+            (input.type.includes('[]') || input.type === 'tuple') && // @TODO: add zod validation for arrays and tuples
+            typeof inputValue === 'string'
           ) {
-            console.log('here')
-            // Convert comma-separated string to array
-            processedData[input.name] = value.split(',').map((v) => v.trim())
-          } else {
-            // Use value as is for other types
-            processedData[input.name] = value
+            return inputValue.split(',').map((item) => item.trim())
           }
+          return inputValue
         }
       })
-
-      const args = abiFunction.inputs.map((input) => processedData[input.name])
 
       if (!wallet || !relayClient || !address) {
         throw Error('Missing wallet or Relay client')
@@ -231,26 +213,33 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
         className="p-2 flex flex-col w-full gap-2"
       >
         {abiFunction.inputs.length > 0
-          ? abiFunction.inputs.map((input, index) => (
-              <FormField
-                key={index}
-                control={formAbiFunctions.control}
-                name={input.name ?? 'Unknown input name'}
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-x-5">
-                    <FormLabel className="flex shrink-0">
-                      {input.name} ({input.type})
-                    </FormLabel>
-                    <div className="flex flex-col w-full gap-2">
-                      <FormControl>
-                        <Input placeholder={input.type} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
-            ))
+          ? abiFunction.inputs.map((input, index) => {
+              const isArrayOrTupple =
+                input.type.includes('[]') || input.type === 'tuple'
+              const placeholder = isArrayOrTupple
+                ? `${input.type} (separate by commas)`
+                : input.type
+              return (
+                <FormField
+                  key={index}
+                  control={formAbiFunctions.control}
+                  name={input.name ?? 'Unknown input name'}
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-x-5">
+                      <FormLabel className="flex shrink-0">
+                        {input.name} ({input.type})
+                      </FormLabel>
+                      <div className="flex flex-col w-full gap-2">
+                        <FormControl>
+                          <Input placeholder={placeholder} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              )
+            })
           : null}
         {abiFunction.stateMutability === 'payable' && (
           <FormField
