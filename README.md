@@ -1,8 +1,24 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
+1. Run the development server:
+```bash
+npm install
+# or
+yarn
+# or
+pnpm install
+# or
+bun install
+```
+   
 
-First, run the development server:
+2. Add the necessary env variables:
+```
+NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
