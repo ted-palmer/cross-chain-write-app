@@ -13,7 +13,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { PublicClient, formatEther, parseEther } from 'viem'
-import { SOLVER_ADDRESS, mapAbiTypeToZod } from '@/lib/constants'
+import {
+  SOLVER_ADDRESS,
+  TESTNET_SOLVER_ADDRESS,
+  mapAbiTypeToZod,
+} from '@/lib/constants'
 import { Execute, RelayChain } from '@reservoir0x/relay-sdk'
 import { useAccount, useBalance, useConfig, useWalletClient } from 'wagmi'
 import { useRelayClient, useTransactionModal } from '@/hooks'
@@ -119,7 +123,8 @@ export const AbiFunctionForm: FC<AbiFunctionFormProps> = ({
           address: contract,
           abi,
           account:
-            (solverCapacity?.solver?.address as Address) ?? SOLVER_ADDRESS,
+            (solverCapacity?.solver?.address as Address) ??
+            TESTNET_SOLVER_ADDRESS,
           functionName: abiFunction.name,
           args: args,
           value: value ? parseEther(value as string) : undefined,
