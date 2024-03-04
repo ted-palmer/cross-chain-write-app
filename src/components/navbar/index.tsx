@@ -1,37 +1,20 @@
-import { useTheme } from 'next-themes'
-import Image from 'next/image'
 import { ThemeToggle } from './ThemeToggle'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useEffect, useState } from 'react'
+import { RelayLogo } from '../common/RelayLogo'
 
 export const Navbar = () => {
-  const { theme, systemTheme } = useTheme()
-  const [imgSrc, setImgSrc] = useState('/relay-light.svg')
-  const isDarkTheme =
-    theme === 'dark' || (theme === 'system' && systemTheme === 'dark')
-
-  useEffect(() => {
-    setImgSrc(isDarkTheme ? '/relay-dark.svg' : '/relay-light.svg')
-  }, [isDarkTheme])
-
   return (
     <div className="w-full flex justify-between items-center py-4">
       <a
-        className="flex place-items-center gap-2 "
+        className="hidden sm:flex place-items-center gap-2"
         href="https://docs.relay.link/what-is-relay"
         target="_blank"
         rel="noopener noreferrer"
       >
         Powered By{' '}
-        <Image
-          src={imgSrc}
-          alt="Relay"
-          width={100}
-          height={24}
-          className="transition duration-150 ease-in-out hover:scale-[1.05]"
-        />
+        <RelayLogo className="w-[100px] h-auto transition duration-150 ease-in-out hover:scale-[1.05]" />
       </a>
-      <div className="flex gap-4">
+      <div className="flex gap-4 w-full justify-between sm:w-max">
         <ThemeToggle />
         <ConnectButton
           chainStatus={{ smallScreen: 'none', largeScreen: 'full' }}

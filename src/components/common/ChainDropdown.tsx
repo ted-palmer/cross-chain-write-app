@@ -31,11 +31,13 @@ export const ChainDropdown: FC<ChainDropdownProps> = ({
         ) : (
           <Button
             variant="outline"
-            className="flex items-center justify-between gap-2 w-[180px] shrink-0"
+            className="flex items-center justify-between gap-2 sm:w-[180px] shrink-0"
           >
             <div className="flex items-center gap-2">
               <ChainIcon chainId={selectedChain.id} />
-              {selectedChain.displayName}
+              <span className="hidden sm:flex">
+                {selectedChain.displayName}
+              </span>
             </div>
             <ChevronDown className="w-4" />
           </Button>

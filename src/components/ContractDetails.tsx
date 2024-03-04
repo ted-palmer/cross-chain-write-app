@@ -28,9 +28,9 @@ export const ContractDetails: FC<ContractDetailsProps> = ({
       <div className="w-full border rounded-lg p-4 flex flex-col gap-4">
         <h6 className="font-bold">Contract Details</h6>
         <div className="flex justify-between flex-col gap-2 md:flex-row">
-          <p>Contract Name: {contractDetails.name}</p>
-          <p>Compiler Version: {contractDetails.compiler_version}</p>
-          <p>Language: {contractDetails.language}</p>
+          <p>Contract Name: {contractDetails?.name ?? '-'}</p>
+          <p>Compiler Version: {contractDetails?.compiler_version ?? '-'}</p>
+          <p>Language: {contractDetails?.language ?? '-'}</p>
         </div>
         <ExternalLink
           text="View contract code on Blockscout"

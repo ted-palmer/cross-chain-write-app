@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '../ui/button'
+import { Button } from './ui/button'
 import { AlertTriangle } from 'lucide-react'
 
 export const Disclaimer: FC = ({}) => {
@@ -23,6 +23,7 @@ export const Disclaimer: FC = ({}) => {
     localStorage.setItem('contract-write-disclaimer-accepted', 'true')
     setIsAccepted(true)
   }
+
   return (
     <Dialog open={!isAccepted}>
       <DialogContent className="sm:max-w-md">

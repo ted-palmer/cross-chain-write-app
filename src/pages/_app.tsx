@@ -19,13 +19,13 @@ import {
 import { TransactionModalProvider } from '@/components/providers/TransactionModalProvider'
 import { ThemeProvider, useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { Disclaimer } from '@/components/common/Disclaimer'
+import { Disclaimer } from '@/components/Disclaimer'
 
 const WALLET_CONNECT_PROJECT_ID =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || ''
 
 const wagmiConfig = getDefaultConfig({
-  appName: 'Relay Contract Viewer',
+  appName: 'Relay Cross-chain Write',
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains: MainnetChains,
   ssr: true,
@@ -39,6 +39,7 @@ function AppWrapper(pageProps: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
+            source: 'Relay Cross-chain Write',
             baseApiUrl: MAINNET_RELAY_API,
             chains: [
               ...MainnetChains.map((chain) =>
@@ -91,10 +92,9 @@ function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="dark"
-      value={{
-        light: 'light',
-      }}
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
     >
       <RainbowKitProvider theme={rainbowKitTheme}>
         <TransactionModalProvider>
