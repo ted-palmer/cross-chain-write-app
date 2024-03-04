@@ -60,7 +60,7 @@ export const TransactionModal: FC = () => {
         {!stepData && !error ? (
           <>
             <DialogHeader className="justify-center">
-              <DialogDescription className="text-center items-center py-3">
+              <DialogDescription className="text-center items-center py-8">
                 Loading...
               </DialogDescription>
             </DialogHeader>
@@ -70,8 +70,8 @@ export const TransactionModal: FC = () => {
           <>
             <DialogHeader className="justify-center">
               <DialogTitle>{error?.name}</DialogTitle>
-              <DialogDescription className="py-3">
-                {error.message}
+              <DialogDescription className="py-3 overflow-y-scroll">
+                <pre className="whitespace-pre-wrap">{error.message}</pre>
               </DialogDescription>
             </DialogHeader>
           </>
@@ -82,6 +82,23 @@ export const TransactionModal: FC = () => {
               <DialogTitle>{currentStep?.action}</DialogTitle>
               <DialogDescription>{currentStep?.description}</DialogDescription>
             </DialogHeader>
+            {currentStepItem && currentStepItem.txHashes ? (
+              <div className="flex flex-col items-center py-2">
+                {currentStepItem.txHashes?.map(({ txHash, chainId }, idx) => {
+                  const blockExplorer = getChainBlockExplorerUrl(chainId)
+                  return (
+                    <a
+                      key={idx}
+                      href={`${blockExplorer}/tx/${txHash}`}
+                      target="_blank"
+                      className="text-muted-foreground hover:opacity-9"
+                    >
+                      View Tx: {truncateAddress(txHash)}
+                    </a>
+                  )
+                })}
+              </div>
+            ) : null}
             <Button disabled>Waiting for confirmation...</Button>
           </>
         ) : null}
@@ -101,7 +118,7 @@ export const TransactionModal: FC = () => {
                     key={idx}
                     href={`${blockExplorer}/tx/${txHash}`}
                     target="_blank"
-                    className="text-primary hover:opacity-9"
+                    className="text-muted-foreground hover:opacity-9"
                   >
                     View Tx: {truncateAddress(txHash)}
                   </a>

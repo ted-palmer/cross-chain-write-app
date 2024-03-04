@@ -11,8 +11,7 @@ import { RelayChain } from '@reservoir0x/relay-sdk'
 import { ChevronDown } from 'lucide-react'
 import { useAccount, useConfig } from 'wagmi'
 import { useChainBalances } from '@/hooks/useChainBalances'
-import { formatEther } from 'viem'
-import { formatETHBalance, formatNumber } from '@/lib/utils'
+import { formatETHBalance } from '@/lib/utils'
 
 type PaymentChainDropdown = {
   chains: RelayChain[]
@@ -44,7 +43,7 @@ export const PaymentChainDropdown: FC<PaymentChainDropdown> = ({
             <div className="flex flex-col items-start">
               {selectedChain.displayName}
               <p className="text-muted-foreground text-xs">
-                Balance: {selectedChainBalance}
+                Balance: {selectedChainBalance} ETH
               </p>
             </div>
           </div>
@@ -62,7 +61,7 @@ export const PaymentChainDropdown: FC<PaymentChainDropdown> = ({
             <div className="flex flex-col">
               {chain.displayName}
               <p className="text-muted-foreground text-xs">
-                Balance: {formatETHBalance(chainBalancesMap[chain.id])}
+                Balance: {formatETHBalance(chainBalancesMap[chain.id]) + ' ETH'}
               </p>
             </div>
           </DropdownMenuItem>

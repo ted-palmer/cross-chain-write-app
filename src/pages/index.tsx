@@ -10,7 +10,7 @@ import { MainnetChains, TestnetChains } from '@/lib/constants'
 import { ChainDropdown } from '@/components/common/ChainDropdown'
 import { AbiContainer } from '@/components/AbiContainer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertOctagon, Wallet } from 'lucide-react'
+import { AlertOctagon, Wallet, XCircle } from 'lucide-react'
 import { ContractDetails } from '@/components/ContractDetails'
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs'
 import { TabsList } from '@radix-ui/react-tabs'
@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SolverCapacity } from '@/components/SolverCapacity'
 import { AbiFunction } from 'abitype'
 import { PaymentChainDropdown } from '@/components/PaymentChainDropdown'
+import { Button } from '@/components/ui/button'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -81,7 +82,7 @@ export default function Home() {
     <main
       className={`flex min-h-screen flex-col items-center justify-between px-4 md:p-24 ${inter.className}`}
     >
-      <div className="z-10 max-w-5xl w-full flex flex-col  justify-between text-sm gap-8">
+      <div className="z-10 max-w-5xl w-full flex flex-col justify-between text-sm gap-8">
         <Navbar />
         <div className="flex items-center w-full gap-2">
           <ChainDropdown
@@ -91,11 +92,23 @@ export default function Home() {
             selectedChain={destinationChain}
             onSelect={(chain) => setDestinationChain(chain)}
           />
-          <Input
-            placeholder="Paste contract address"
-            value={contract}
-            onChange={(e) => setContract(e.target.value)}
-          />
+          <div className="w-full relative">
+            <Input
+              placeholder="Paste contract address"
+              value={contract}
+              onChange={(e) => setContract(e.target.value)}
+            />
+            {contract?.length > 0 ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-0 right-0 group"
+                onClick={() => setContract('')}
+              >
+                <XCircle className="h-4 h-4 bg-background group-hover:bg-accent transition-colors" />
+              </Button>
+            ) : null}
+          </div>
         </div>
         <div className="w-full flex flex-col gap-6 gap-3">
           <div className="flex items-center gap-2">
@@ -122,7 +135,7 @@ export default function Home() {
         {/* Loading */}
         {isLoading && <Skeleton className="h-[400px] w-full" />}
 
-        {/* Error State */}
+        {/* Error */}
         {error ? (
           <Alert variant="destructive" className="w-full">
             <AlertOctagon className="h-4 w-4" />
@@ -174,7 +187,7 @@ export default function Home() {
 
         {/* Empty State */}
         {!isLoading && !error && !writeMethodAbi && !writeProxyMethodAbi ? (
-          <div className="w-full flex flex-col items-center gap-8">
+          <div className="w-full flex flex-col items-center gap-8 rounded-lg border py-10 px-2">
             <h3 className="text-lg text-center">
               Fetch the write methods for any verified contract and pay with
               cross-chain ETH

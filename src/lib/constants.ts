@@ -1,5 +1,5 @@
+import { AbiType } from 'abitype'
 import {
-  Chain,
   base,
   baseSepolia,
   blastSepolia,
@@ -30,15 +30,15 @@ export const ChainIdToBlockScoutBaseUrl: Record<number, string> = {
   17000: 'https://eth-holesky.blockscout.com',
 }
 
-export const MainnetChains = [mainnet, optimism, base, zora, zkSync] as [
-  Chain,
-  ...Chain[]
-]
+export const MainnetChains = [mainnet, optimism, base, zora, zkSync] as const
 
-export const TestnetChains = [sepolia, baseSepolia, zoraSepolia, holesky] as [
-  Chain,
-  ...Chain[]
-]
+export const TestnetChains = [
+  sepolia,
+  baseSepolia,
+  zoraSepolia,
+  holesky,
+] as const
+
 export const TestnetPaymentChains = [
   sepolia,
   baseSepolia,
@@ -46,55 +46,50 @@ export const TestnetPaymentChains = [
   holesky,
   blastSepolia,
   modeTestnet,
-] as [Chain, ...Chain[]]
+] as const
 
-// Validators
+export const SOLVER_ADDRESS = '0xf70da97812cb96acdf810712aa562db8dfa3dbef'
+export const TESTNET_SOLVER_ADDRESS =
+  '0x3e34b27a9bf37D8424e1a58aC7fc4D06914B76B9'
+
+// Zod Validators
 const addressValidator = z
   .string()
   .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid address')
-const uint256Validator = z
+
+const intValidator = z // @TODO handle size validation
   .string()
-  .regex(/^\d+$/, 'Must be a positive number')
-  .transform(Number)
+  .regex(/^-?\d+$/, 'Invalid integer')
+  .transform((value) => BigInt(value))
 
-const uint8Validator = z
+const uIntValidator = z // @TODO handle size validation
   .string()
-  .regex(/^\d+$/, 'Must be a positive number')
-  .transform(Number)
+  .regex(/^\d+$/, 'Invalid unsigned integer')
+  .transform((value) => BigInt(value))
 
-const bytes32Validator = z
+const bytesValidator = z // @TODO handle size validation
   .string()
-  .length(66, 'Must be 32 bytes in hex format')
-  .regex(/^0x[a-fA-F0-9]{64}$/i, 'Invalid bytes32 format')
+  .regex(/^0x[a-fA-F0-9]+$/, 'Must be a valid hex string')
 
-const boolValidator = z.boolean()
-
-const int256Validator = z
+const booleanValidator = z
   .string()
-  .regex(/^-?\d+$/, 'Must be a number')
-  .transform(Number)
-  .refine(
-    (num) => num >= -Math.pow(2, 255) && num < Math.pow(2, 255),
-    'Must be within int256 range'
-  )
+  .regex(/^(true|false)$/i, 'Must be "true" or "false"')
+  .transform((value) => value.toLowerCase() === 'true')
 
-// const addressArrayValidator = z.array(addressValidator) @TODO
-
-export type ValidatorType =
-  | z.ZodString
-  | z.ZodEffects<z.ZodString, number, string>
-  | z.ZodEffects<z.ZodEffects<z.ZodString, number, string>, number, string>
-  | z.ZodBoolean
-
-// Map Solidity types to Zod validators
-export const typeToValidator: {
-  [type: string]: ValidatorType
-} = {
-  address: addressValidator,
-  // 'address[]': addressArrayValidator, @TODO: more complicated
-  uint256: uint256Validator,
-  uint8: uint8Validator,
-  int256: int256Validator,
-  bytes32: bytes32Validator,
-  bool: boolValidator,
+export const mapAbiTypeToZod = (abiType: AbiType) => {
+  if (abiType === 'address') {
+    return addressValidator
+  } else if (abiType === 'bool') {
+    return booleanValidator
+  } else if (abiType.startsWith('int')) {
+    return intValidator
+  } else if (abiType.startsWith('uint')) {
+    return uIntValidator
+  } else if (abiType.startsWith('bytes')) {
+    return bytesValidator
+  } else if (abiType === 'string') {
+    return z.string()
+  }
+  // @TODO: handle arrays and tuples
+  return z.any()
 }

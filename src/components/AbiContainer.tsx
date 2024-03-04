@@ -1,5 +1,5 @@
 import { Abi, AbiFunction, Address } from 'abitype'
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import { RelayChain } from '@reservoir0x/relay-sdk'
 import { AbiFunctionForm } from '@/components/AbiFunctionForm'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'

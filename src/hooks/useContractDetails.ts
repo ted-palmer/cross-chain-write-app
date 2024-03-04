@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { isAddress } from 'viem'
 
 export type ContractDetailsResponse = {
-  name: string
-  language: string
-  compiler_version: string
+  name?: string
+  language?: string
+  compiler_version?: string
 }
 
 export default function useContractDetails(chainId: number, contract?: string) {
