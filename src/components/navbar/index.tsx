@@ -1,7 +1,7 @@
 import { ThemeToggle } from './ThemeToggle'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Button } from '@/components/ui/button'
-import { Icons } from '@/components/common/icons'
+import { Icons } from '@/components/common/Icons'
 
 export const Navbar = () => {
   return (
