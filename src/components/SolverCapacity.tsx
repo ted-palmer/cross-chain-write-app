@@ -2,12 +2,6 @@ import useSolverCapacity from '@/hooks/useSolverCapacity'
 import { FC } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatEther } from 'viem'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { InfoIcon } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 
