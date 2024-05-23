@@ -40,7 +40,7 @@ function AppWrapper(pageProps: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RelayClientProvider
           options={{
-            source: 'Cross-Chain Write',
+            source: 'https://cross-chain-write.vercel.app/',
             baseApiUrl: MAINNET_RELAY_API,
             chains: [
               ...MainnetChains.map((chain) =>
